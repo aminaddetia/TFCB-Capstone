@@ -22,7 +22,7 @@ library(ggpubr)
 
 ## Reading in dataset and generating summary statistics for groups stratified by age and glaucoma status
 
-This section reads in the [ds_whole.csv]('data/ds_whole.csv') file and outputs the summary file [age_group_glaucoma_summary_statistics.csv](age_group_glaucoma_summary_statistics.csv).
+This section reads in the [ds_whole.csv](data/ds_whole.csv) file and outputs the summary file [age_group_glaucoma_summary_statistics.csv](age_group_glaucoma_summary_statistics.csv).
 
 ```{r cars}
 
@@ -118,3 +118,104 @@ To answer my research question, I visualized the data as boxplots stratified by 
 
 The summary table and plots indicate that certain factors might be predictors of glaucoma status for particular age groups. For example, MD is likely a better predictor of glaucoma status for the 80 years old and over group than for other age groups. Further, ocular pressure is likely a better predictor of glaucoma status for younger individual than for older individuals. 
 
+# Glaucoma diagnosis predicted by RNFL mean thickness
+
+In the machine learning decision tree, the first factor examined for used for determining an individual's glaucoma status is the RNFL mean thickness. The authors used a RNFL mean thickness of 89.33334 as their initial criteria in their glaucoma decision tree. Here, I examine how many individuals would be correctly diagnosed by RNFL mean thickness alone and ask: Is the chosen RNFL mean thickness value the best value for distinguishing between the glaucoma-positive and glaucoma-negative individuals or does a better value exist?
+
+
+## Calculating the number of individuals correctly and incorrectly diagnosis on RNFL mean thickness value alone.
+
+This section filters the dataset to determine how many individuals can be correctly diagnosed with RNFL mean thickness alone and calculates the false positive and false negative rates.
+
+```{r}
+
+#Counting number of individuals correctly predicted to not have glaucoma and calculating the false negative rate
+
+dataset %>%
+  filter(RNFL4.mean > 89.33334) %>%
+  group_by(glaucoma) %>%
+  count() %>%
+  ungroup() %>%
+  mutate(Percent=n/sum(n)*100) -> RNFL_no_glaucoma_89
+
+#Counting number of individuals correctly predicted to  have glaucoma and calculating the false positive rate
+
+dataset %>%
+  filter(RNFL4.mean <= 89.33334) %>%
+  group_by(glaucoma) %>%
+  count() %>%
+  ungroup() %>%
+  mutate(Percent=n/sum(n)*100) -> RNFL_glaucoma_89
+
+#Printing the results
+
+print(paste0(RNFL_glaucoma_89[2,2], ' individuals were correctly predicted to have glaucoma and ',  RNFL_no_glaucoma_89[1,2], ' individual were correctly to predicted to not have glaucoma using a RNFL4 mean thickness of 89.3334. The false positive rate was ', RNFL_glaucoma_89[1,3], ' and the false negative rate was ', RNFL_no_glaucoma_89[2,3], '.'))
+```
+
+
+```{r}
+
+#Repeating analysis with RNFL mean thickness of 87
+
+dataset %>%
+  filter(RNFL4.mean > 87) %>%
+  group_by(glaucoma) %>%
+  count() %>%
+  ungroup() %>%
+  mutate(Percent=n/sum(n)*100) -> RNFL_no_glaucoma_87
+
+dataset %>%
+  filter(RNFL4.mean <= 87) %>%
+  group_by(glaucoma) %>%
+  count() %>%
+  ungroup() %>%
+  mutate(Percent=n/sum(n)*100) -> RNFL_glaucoma_87
+
+print(paste0(RNFL_glaucoma_87[2,2], ' individuals were correctly predicted to have glaucoma and ',  RNFL_no_glaucoma_87[1,2], ' individual were correctly to predicted to not have glaucoma using a RNFL4 mean thickness of 87. The false positive rate was ', RNFL_glaucoma_87[1,3], ' and the false negative rate was ', RNFL_no_glaucoma_87[2,3], '.'))
+```
+
+
+```{r}
+
+#Repeating analysis with RNFL mean thickness of 91
+
+dataset %>%
+  filter(RNFL4.mean > 91) %>%
+  group_by(glaucoma) %>%
+  count() %>%
+  ungroup() %>%
+  mutate(Percent=n/sum(n)*100) -> RNFL_no_glaucoma_91
+
+dataset %>%
+  filter(RNFL4.mean <= 91) %>%
+  group_by(glaucoma) %>%
+  count() %>%
+  ungroup() %>%
+  mutate(Percent=n/sum(n)*100) -> RNFL_glaucoma_91
+
+print(paste0(RNFL_glaucoma_91[2,2], ' individuals were correctly predicted to have glaucoma and ',  RNFL_no_glaucoma_91[1,2], ' individual were correctly to predicted to not have glaucoma using a RNFL4 mean thickness of 91. The false positive rate was ', RNFL_glaucoma_91[1,3], ' and the false negative rate was ', RNFL_no_glaucoma_91[2,3], '.'))
+```
+
+
+## Plotting the distribution of RNFL mean thickness for glaucoma-positive and glaucoma-negative individuals
+
+This section plots the RNFL mean thickness stratified by glaucoma status to examine why choosing a RNFL mean thickness greater or less than 89.33334 increased the false positive or false negative rates, respectively. 
+
+```{r}
+
+#Creating density plot
+
+RNFL_density_plot <- ggplot(dataset, aes(x = RNFL4.mean, color = glaucoma, fill = glaucoma)) + geom_density(alpha = 0.2) + theme_classic() + geom_vline(xintercept = 89.33334, linetype = 'dashed') + xlab('RNFL mean thickness')
+
+#Displaying plot
+
+plot(RNFL_density_plot)
+
+#Saving the plot
+
+ggsave('RNFL_mean_thickness_density_plot.png')
+
+```
+I chose to represent the distribution RNFL mean thickness as a density plot as it allowed for an easy visual examination of the distributions of the glaucoma-positive and glaucoma-negative groups. I kept the color identical to the previous plots for easy visual interpretation. 
+
+The analysis here shows that increasing the RNFL mean thickness for  would increase the false positive rate while decreasing the RNFL mean thickness would increase the false negative rate. This is further demonstrated in the density plot which shows shifting the chosen RNFL mean thickness value impacts the number of false positive or false negative cases since the distribution overlap. Together, this demonstrates that RNFL mean thickness alone is not a perfect predictor of glaucoma status.
