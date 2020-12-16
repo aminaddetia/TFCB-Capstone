@@ -5,6 +5,12 @@ date: "12/15/2020"
 output: html_document
 ---
 
+# About the data
+
+The [dataset](data/ds_whole.csv) here represents various features measures from 499 healthy or glaucoma-positive individuals. The dataset was then split into a [training set](data/ds_train.csv) with records for 399 individuals for a machine learning model and a [test set](data/ds_test.csv) with records for the remaining 100 individuals.
+
+I assumed the OD/OS metadata provided in the table did not affect any of the features and that each entry was for a single individual. Additional documentation on the features analyzed would have improved by ability to use and interpet the results from this dataset.
+
 # Impact of age and glaucoma status on candidate features used to develop a machine learning model for diagnosing glaucoma
 
 The dataset analyzed here examines various features in individuals diagnosed with glaucoma compared to healthy individuals and then builds uses these data to build a machine learning model for diagnosing glaucoma. The model asssumes that each the of the factors are equally predictive regardless of the individual's age and uses the individual's age in the machine learning diagnosis decision tree. Here, I examine that underlying assumption by asking the following question: Are certain measured factors better predictors of glaucoma status for particular age groups or are all factors equally good predictors of glaucoma status regardless of an individual's age?
@@ -22,7 +28,7 @@ library(ggpubr)
 
 ## Reading in dataset and generating summary statistics for groups stratified by age and glaucoma status
 
-This section reads in the [ds_whole.csv](data/ds_whole.csv) file and outputs the summary file [age_group_glaucoma_summary_statistics.csv](age_group_glaucoma_summary_statistics.csv).
+This section reads in the [ds_whole.csv](data/ds_whole.csv) file and outputs the summary file [age_group_glaucoma_summary_statistics.csv](results/age_group_glaucoma_summary_statistics.csv).
 
 ```{r cars}
 
@@ -75,13 +81,13 @@ print(summary)
 
 #Creating a csv file with the summary statistics
 
-write.csv(summary, 'age_group_glaucoma_summary_statistics.csv', row.names = F)
+write.csv(summary, 'results/age_group_glaucoma_summary_statistics.csv', row.names = F)
 
 ```
 
 ## Plotting data stratified by age group and glaucoma.
 
-This section takes the summary table generated in the chunk above and outputs plots for each of the candidate features in the [age_group_glaucoma_plots.png](age_group_glaucoma_plots.png) file.
+This section takes the summary table generated in the chunk above and outputs plots for each of the candidate features in the [age_group_glaucoma_plots.png](results/age_group_glaucoma_plots.png) file.
 
 ```{r pressure, echo=FALSE}
 
@@ -109,7 +115,7 @@ plot(plots)
 
 #Saving the final plots as a png file
 
-ggsave('age_group_glaucoma_plots.png', plot = plots)
+ggsave('results/age_group_glaucoma_plots.png', plot = plots)
 
 
 ```
@@ -213,9 +219,15 @@ plot(RNFL_density_plot)
 
 #Saving the plot
 
-ggsave('RNFL_mean_thickness_density_plot.png')
+ggsave('results/RNFL_mean_thickness_density_plot.png')
 
 ```
 I chose to represent the distribution RNFL mean thickness as a density plot as it allowed for an easy visual examination of the distributions of the glaucoma-positive and glaucoma-negative groups. I kept the color identical to the previous plots for easy visual interpretation. 
 
 The analysis here shows that increasing the RNFL mean thickness for  would increase the false positive rate while decreasing the RNFL mean thickness would increase the false negative rate. This is further demonstrated in the density plot which shows shifting the chosen RNFL mean thickness value impacts the number of false positive or false negative cases since the distribution overlap. Together, this demonstrates that RNFL mean thickness alone is not a perfect predictor of glaucoma status.
+
+# Reproducibility
+
+The analysis presented in the original manuscript was mostly reproducible, but some modifications would have improved the reproducibility. No data on the full list of factors that included gender and VFI were available and such I could not confirm that the presented factors were indeed the best factors for building a machine learning model for glaucoma diagnosis. Second, additional documentation on their analysis approach would have improved my ability to reproduce the data. For example, the PCA presented in Figure 2 was scaled, but this was not mentioned in the text. Finally, no code was available for reproducing their figures and conclusions. The availability of such code would greatly improve the reproducibility. 
+
+My analysis is highly reproducible. All code is documented and commented in this R markdown file or the following [Jupyter Notebook](TFCB_capstone_report2.ipynb). The data used are also available in the following [data](data) directory.
