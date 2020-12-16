@@ -1,31 +1,42 @@
 ---
-title: "TFCB capstone question 1"
+title: "TFCB Capstone Question 1"
 author: "Amin Addetia"
-date: "12/13/2020"
+date: "12/15/2020"
 output: html_document
 ---
 
+# Impact of age and glaucoma status on candidate features used to develop a machine learning model for diagnosing glaucoma
+
+The dataset analyzed here examines various features in individuals diagnosed with glaucoma compared to healthy individuals and then builds uses these data to build a machine learning model for diagnosing glaucoma. The model asssumes that each the of the factors are equally predictive regardless of the individual's age and uses the individual's age in the machine learning diagnosis decision tree. Here, I examine that underlying assumption by asking the following question: Are certain measured factors better predictors of glaucoma status for particular age groups or are all factors equally good predictors of glaucoma status regardless of an individual's age?
+
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-```
 
-## R Markdown
+#Loading the relevant libraries for the analysis.
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
 library(tidyverse)
 library(ggpubr)
 
+```
+
+## Reading in dataset and generating summary statistics for groups stratified by age and glaucoma status
+
+This section reads in the [ds_whole.csv]('data/ds_whole.csv') file and outputs the summary file [age_group_glaucoma_summary_statistics.csv](age_group_glaucoma_summary_statistics.csv).
+
+```{r cars}
+
+#Reading in dataset
+
 dataset <- read.csv('data/ds_whole.csv', header = T)
 
-save <- dataset
+#Reassigning variables in glaucoma column to make more human readable
 
 dataset %>%
   mutate(glaucoma=case_when(glaucoma == 0 ~ 'No',
                    glaucoma == 1 ~ 'Yes'), .keep = 'unused') -> dataset
+
+#Adding a new column with age group for each observation, which is based on the age column
 
 dataset %>% 
   mutate(age_group=case_when(age <= 20 ~ '20 yo and under',
@@ -35,13 +46,17 @@ dataset %>%
                              age >= 66 & age <= 80 ~ '66-80 yo',
                              age > 80 ~ '80 yo and over')) -> dataset
 
+#Summarize the data based on glaucoma status and age group
+
 dataset %>%
   group_by(age_group, glaucoma) %>%
   summarise_all(funs(mean)) -> summary
 
+#Dropping the RL column
+
 summary <- subset(summary, select = -c(RL))
 
-save2 <- summary
+#Renaming the column headers to make them more human-readable
 
 summary %>%
   rename( 'Age Group'= age_group,
@@ -54,9 +69,23 @@ summary %>%
           'Mean cornea thickness' = cornea_thickness,
           'Mean RNFL thickness' = RNFL4.mean) -> summary
 
+#Displaying the summary statistics
+
 print(summary)
 
-write.csv(summary, 'idkman.csv', row.names = F, header = T)
+#Creating a csv file with the summary statistics
+
+write.csv(summary, 'age_group_glaucoma_summary_statistics.csv', row.names = F)
+
+```
+
+## Plotting data stratified by age group and glaucoma.
+
+This section takes the summary table generated in the chunk above and outputs plots for each of the candidate features in the [age_group_glaucoma_plots.png](age_group_glaucoma_plots.png) file.
+
+```{r pressure, echo=FALSE}
+
+#Creating individual boxplots for each of the variables, grouped by age group and glaucoma status.
 
 MD_plot <- ggplot(dataset, aes(x=age_group, y=MD, fill=factor(glaucoma))) + geom_boxplot() + theme_classic() + xlab('Age Group') + labs(fill='Glaucoma') + theme(axis.text.x = element_text(angle = 90))
  
@@ -70,8 +99,22 @@ CT_plot <- ggplot(dataset, aes(x=age_group, y=cornea_thickness, fill=factor(glau
 
 RNFL4_plot <- ggplot(dataset, aes(x=age_group, y=RNFL4.mean, fill=factor(glaucoma))) + geom_boxplot() + theme_classic() + xlab('Age Group') + labs(fill='Glaucoma') + ylab('RNFL Mean Thickness') + theme(axis.text.x = element_text(angle = 90))
 
+#Arranging all the individual plots together in a single plot
+
 plots <- ggarrange(MD_plot, OP_plot, PSD_plot, GHT_plot, CT_plot, RNFL4_plot, common.legend = T, legend = 'bottom') + theme(axis.text.x = element_text(angle = 90))
+
+#Displaying the final plots
 
 plot(plots)
 
-ggsave('idkman.png', plot = plots)
+#Saving the final plots as a png file
+
+ggsave('age_group_glaucoma_plots.png', plot = plots)
+
+
+```
+
+To answer my research question, I visualized the data as boxplots stratified by age group and glaucoma status. I chose to use box plots for the plots as they display both the mean and range for the plotted dataset. As a result, they allow for an easy visual comparison of distributions between the glaucoma-positive and glaucoma-negative groups in each age group. I kept the coloring of glaucoma status identical in each plot for easy visual comparison across the plots.
+
+The summary table and plots indicate that certain factors might be predictors of glaucoma status for particular age groups. For example, MD is likely a better predictor of glaucoma status for the 80 years old and over group than for other age groups. Further, ocular pressure is likely a better predictor of glaucoma status for younger individual than for older individuals. 
+
