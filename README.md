@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Here, I analyzed a dataset that examined various features in healthy and glaucoma-positive individuals. I centered by analysis on the three questions below and I used programming skills I learned this past quarter in TFCB to answer these questions.
+Here, I analyzed a dataset that examined various features in healthy and glaucoma-positive individuals. I centered my analysis on the three questions below and I used programming skills I learned this past quarter in TFCB to answer these questions.
 1. Are certain measured factors better predictors of glaucoma status for particular age groups or are all factors equally good predictors of glaucoma status regardless of an individual's age?
 2. Is the chosen RNFL mean thickness value the best value for distinguishing between the glaucoma-positive and glaucoma-negative individuals or does a better value exist?
 3. How similar are the training and test dataset?
